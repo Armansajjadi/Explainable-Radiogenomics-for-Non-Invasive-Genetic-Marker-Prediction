@@ -1,21 +1,121 @@
-# Explainable Radiogenomics for IDH Mutation Prediction
+# Explainable Radiogenomics for IDH Mutation Prediction on Low-Memory GPUs
 
-This project aims to predict IDH mutation status in glioma patients using radiogenomics, combining medical imaging data with genomic information. This README covers the initial data preparation and exploratory data analysis (EDA) phases of the project.
+This project leverages 3D deep learning to predict Isocitrate Dehydrogenase (IDH) mutation status in glioma patients from multi-modal MRI scans. A key focus is on achieving high performance while maintaining computational efficiency for deployment on GPUs with limited memory. Furthermore, the project emphasizes model interpretability by using Explainable AI (XAI) techniques to visualize the regions of interest the model uses for its predictions.
 
-## Data Preparation
+\<p align="center"\>
+\<img src="assets/brain\_tumor\_3rd\_person\_view.gif" alt="3D Tumor Visualization"\>
+\</p\>
 
-The initial dataset is loaded from `UCSF-PDGM-metadata_v5.csv`. The following data preparation steps are performed:
+-----
 
-  * **Feature Selection:** A new DataFrame is created containing only the 'ID' and 'IDH' columns, as these are the primary features of interest for this stage of the project.
-  * **Binarization of Target Variable:** The 'IDH' column, which contains categorical data about the mutation status, is converted into a binary format. A new column, `IDH_binary`, is created where `1` represents a mutation and `0` represents the wildtype.
-  * **Final DataFrame:** The original 'IDH' column is dropped, resulting in a final DataFrame ready for analysis with 'ID' and 'IDH\_binary' columns.
+## 📋 Table of Contents
 
-## Data Visualization
+1.  [Overview](https://www.google.com/search?q=%23-overview)
+2.  [Key Features](https://www.google.com/search?q=%23-key-features)
+3.  [Methodology](https://www.google.com/search?q=%23-methodology)
+4.  [Performance Results](https://www.google.com/search?q=%23-performance-results)
+5.  [Explainable AI (XAI)](https://www.google.com/search?q=%23-explainable-ai-xai)
+6.  [Setup and Usage](https://www.google.com/search?q=%23-setup-and-usage)
+7.  [Technologies Used](https://www.google.com/search?q=%23-technologies-used)
 
-To understand the distribution of the target variable, a pie chart is generated to visualize the proportion of patients with and without the IDH mutation.
+-----
 
-### Brain Scan Visualization
+## 📌 Overview
 
-To visually inspect the imaging data, 3D visualizations of the brain scans can be generated. Here is an example of what a 3D brain scan visualization looks like:
+Radiogenomics is an emerging field that aims to link medical imaging features with underlying genomic characteristics of tumors. IDH mutation is a critical biomarker in gliomas, as it has significant prognostic and therapeutic implications. This project develops a 3D EfficientNet-B7 model, adapted for multi-modal MRI data, to perform this predictive task. By employing a fine-tuning strategy that freezes the majority of the network, the model can be trained effectively on consumer-grade GPUs. Explainability is achieved using Grad-CAM to ensure the model's decisions are transparent and clinically relevant.
 
-![3D Brain Scan](brain_tumor_3rd_person_view.gif)
+-----
+
+## ✨ Key Features
+
+  - **3D Deep Learning**: Utilizes a 3D-adapted EfficientNet-B7 model to capture complex spatial features from volumetric MRI data.
+  - **Multi-Modal Data Fusion**: Integrates four MRI sequences (FLAIR, T1, T1c, T2) as input channels to provide a comprehensive view of the tumor.
+  - **Low-Memory Fine-Tuning**: Employs a layer-freezing strategy to drastically reduce the number of trainable parameters, enabling training on GPUs with limited VRAM.
+  - **Class Imbalance Handling**: Addresses the dataset's natural imbalance using Focal Loss and a `WeightedRandomSampler` for robust training.
+  - **Advanced Data Augmentation**: Leverages the `Torchio` library for a rich pipeline of 3D-specific augmentations to improve model generalization.
+  - **Explainable AI (XAI)**: Implements Grad-CAM to generate heatmaps that visualize the brain regions the model focuses on for prediction.
+
+-----
+
+## 🔬 Methodology
+
+The project workflow is broken down into the following key stages:
+
+1.  **Data Preparation**: Metadata is loaded to map patient IDs to their IDH mutation status. The labels are converted to a binary format (`0` for Wildtype, `1` for Mutated). The dataset is then stratified and split into 70% training, 15% validation, and 15% testing sets.
+
+2.  **Preprocessing & Augmentation**:
+
+      - All MRI scans are resampled to a uniform size (`128x128x128`) to ensure consistency.
+      - The training data undergoes extensive 3D augmentation (flips, affine transforms, elastic deformations) using `Torchio`.
+      - A `WeightedRandomSampler` is used in the `DataLoader` to oversample the minority class during training.
+
+3.  **Model Architecture**:
+
+      - A `timm_3d` implementation of **EfficientNet-B7**, pre-trained on a large-scale dataset, is used as the base architecture.
+      - The model's input layer is adapted to accept 4 channels (for the four MRI modalities), and the final classifier is set to 2 output classes.
+
+4.  **Low-Memory Training Strategy**:
+
+      - To reduce computational load, all layers of the pre-trained model are initially frozen.
+      - Only the final two convolutional blocks and the classifier head are unfrozen, allowing them to be fine-tuned for the specific task of IDH prediction. This significantly reduces the number of trainable parameters.
+
+5.  **Training Loop**:
+
+      - The model is trained using **Focal Loss** to better handle class imbalance and the **AdamW** optimizer.
+      - A **OneCycleLR** scheduler dynamically adjusts the learning rate to improve convergence.
+      - The training process includes checkpointing and an **early stopping** mechanism to prevent overfitting.
+
+6.  **Evaluation & Visualization**:
+
+      - The model's final performance is evaluated on the held-out test set using metrics like Accuracy, F1-Score, Precision, Recall, and ROC-AUC.
+      - A comprehensive suite of plots, including a confusion matrix and ROC curve, are generated to visualize performance.
+
+-----
+
+## 📈 Performance Results
+
+The model's performance was tracked during training and validated on the test set.
+
+#### Training History
+
+The training and validation loss curves show good convergence, with the model learning effectively without significant overfitting. The accuracy curves demonstrate a steady improvement over epochs.
+
+\<p align="center"\>
+\<img src="assets/loss\_plot.png" width="45%"\>
+\<img src="assets/accuracy\_plot.png" width="45%"\>
+\</p\>
+
+#### Final Test Set Evaluation
+
+The model was ultimately evaluated on the unseen test set, providing an unbiased assessment of its generalization capability.
+
+\<p align="center"\>
+\<img src="assets/confusion\_matrix.png" width="45%"\>
+\<img src="assets/roc\_curve.png" width="45%"\>
+\</p\>
+
+-----
+
+## 💡 Explainable AI (XAI)
+
+To ensure the model is not just a "black box," **Grad-CAM** was used to highlight the regions of the MRI that were most influential in its predictions. The results clearly show that the model's focus (heatmap) consistently localizes to the area of the tumor (ground truth segmentation), confirming that it has learned clinically relevant features.
+
+\<p align="center"\>
+\<b\>Example Grad-CAM Visualization (FLAIR sequence)\</b\>\<br\>
+\<img src="assets/grad\_cam\_example.png" alt="Grad-CAM Visualization" width="90%"\>
+\</p\>
+
+-----
+
+## 🛠️ Technologies Used
+
+  - **Python 3.9+**
+  - **PyTorch**: Core deep learning framework.
+  - **MONAI**: For medical imaging-specific deep learning utilities.
+  - **Torchio**: For 3D data loading, preprocessing, and augmentation.
+  - **timm\_3d**: For 3D-adapted pre-trained models.
+  - **Scikit-learn**: For performance metrics and data splitting.
+  - **Pandas & NumPy**: For data manipulation.
+  - **Matplotlib & Seaborn**: For plotting and visualizations.
+  - **PyVista & SimpleITK**: For 3D data handling and rendering.
+  - **TorchCAM**: For Grad-CAM implementation.
