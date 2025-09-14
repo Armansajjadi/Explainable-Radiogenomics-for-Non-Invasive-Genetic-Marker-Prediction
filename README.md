@@ -2,9 +2,7 @@
 
 This project leverages 3D deep learning to predict Isocitrate Dehydrogenase (IDH) mutation status in glioma patients from multi-modal MRI scans. A key focus is on achieving high performance while maintaining computational efficiency for deployment on GPUs with limited memory. Furthermore, the project emphasizes model interpretability by using Explainable AI (XAI) techniques to visualize the regions of interest the model uses for its predictions.
 
-\<p align="center"\>
-\<img src="assets/brain\_tumor\_3rd\_person\_view.gif" alt="3D Tumor Visualization"\>
-\</p\>
+![Alt text](assets/brain_tumor_3rd_person_view.gif)
 
 -----
 
@@ -80,19 +78,17 @@ The model's performance was tracked during training and validated on the test se
 
 The training and validation loss curves show good convergence, with the model learning effectively without significant overfitting. The accuracy curves demonstrate a steady improvement over epochs.
 
-\<p align="center"\>
-\<img src="assets/loss\_plot.png" width="45%"\>
-\<img src="assets/accuracy\_plot.png" width="45%"\>
-\</p\>
+![Alt text](assets/loss_plot.png)
+
+![Alt text](assets/accuracy_plot.png)
 
 #### Final Test Set Evaluation
 
 The model was ultimately evaluated on the unseen test set, providing an unbiased assessment of its generalization capability.
 
-\<p align="center"\>
-\<img src="assets/confusion\_matrix.png" width="45%"\>
-\<img src="assets/roc\_curve.png" width="45%"\>
-\</p\>
+![Alt text](assets/confusion_matrix.png)
+
+![Alt text](assets/roc_curve.png)
 
 -----
 
@@ -100,10 +96,7 @@ The model was ultimately evaluated on the unseen test set, providing an unbiased
 
 To ensure the model is not just a "black box," **Grad-CAM** was used to highlight the regions of the MRI that were most influential in its predictions. The results clearly show that the model's focus (heatmap) consistently localizes to the area of the tumor (ground truth segmentation), confirming that it has learned clinically relevant features.
 
-\<p align="center"\>
-\<b\>Example Grad-CAM Visualization (FLAIR sequence)\</b\>\<br\>
-\<img src="assets/grad\_cam\_example.png" alt="Grad-CAM Visualization" width="90%"\>
-\</p\>
+![Alt text](assets/grad_cam_example.png)
 
 -----
 
