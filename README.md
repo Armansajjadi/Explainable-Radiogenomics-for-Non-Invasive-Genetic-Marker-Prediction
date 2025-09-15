@@ -94,7 +94,7 @@ The model was ultimately evaluated on the unseen test set, providing an unbiased
 
 ## 💡 Explainable AI (XAI)
 
-To ensure the model is not just a "black box," **Grad-CAM** was used to highlight the regions of the MRI that were most influential in its predictions. The results clearly show that the model's focus (heatmap) consistently localizes to the area of the tumor (ground truth segmentation), confirming that it has learned clinically relevant features.
+To ensure the model is not just a "black box", **Grad-CAM** was used to highlight the regions of the MRI that were most influential in its predictions. The results clearly show that the model's focus (heatmap) consistently localizes to the area of the tumor (ground truth segmentation), confirming that it has learned clinically relevant features.
 
 ![Alt text](assets/grad_cam_example.png)
 
